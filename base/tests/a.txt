@@ -1,0 +1,8 @@
+20180525 01:26:04.708148Z 23400 TRACE main xxxxxxxx - logging_test.cc:29
+20180525 01:26:10.162833Z 23417 TRACE main xxxxxxxx - logging_test.cc:29
+20180525 01:29:39.815890Z 23503 TRACE main xxxxxxxx - logging_test.cc:30
+20180525 01:29:39.815947Z 23503 INFO  xxxxxxxx - logging_test.cc:31
+20180525 01:29:39.815951Z 23503 FATAL siji - logging_test.cc:32
+20180525 06:45:18.413108Z 26067 TRACE main xxxxxxxx - logging_test.cc:30
+20180525 06:45:18.413154Z 26067 INFO  xxxxxxxx - logging_test.cc:31
+20180525 06:45:18.413158Z 26067 FATAL siji - logging_test.cc:32

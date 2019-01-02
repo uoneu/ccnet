@@ -1,0 +1,144 @@
+#include <muduo/base/AsyncLogging.h>
+#include <muduo/base/LogFile.h>
+#include <muduo/base/Timestamp.h>
+
+#include <stdio.h>
+
+using namespace muduo;
+
+AsyncLogging::AsyncLogging(const string& basename,
+                           off_t rollSize,
+                           int flushInterval)
+  : flushInterval_(flushInterval),
+    running_(false),
+    basename_(basename),
+    rollSize_(rollSize),
+    thread_(std::bind(&AsyncLogging::threadFunc, this), "Logging"),
+    latch_(1),
+    mutex_(),
+    cond_(mutex_),
+    currentBuffer_(new Buffer),
+    nextBuffer_(new Buffer),
+    buffers_()
+{
+  currentBuffer_->bzero();
+  nextBuffer_->bzero();
+  buffers_.reserve(16);
+}
+// 所有LOG_*最终都会调用append函数, 通过设置Logger::setOutput()  
+// 前端占用两个buffer
+void AsyncLogging::append(const char* logline, int len)
+{
+  //可能有多个线程同时调用LOG_*写入日志，所以需要同步。  
+  muduo::MutexLockGuard lock(mutex_);
+  if (currentBuffer_->avail() > len) //buffer还够大，可以装下新一条日志内容。  
+  {
+    currentBuffer_->append(logline, len);
+  }
+  else
+  {
+    //currentBuffer_已经满了，要将之存放到buffers_中。
+    buffers_.push_back(std::move(currentBuffer_));
+
+    if (nextBuffer_)
+    {
+      currentBuffer_ = std::move(nextBuffer_);
+    }
+    else
+    {
+      currentBuffer_.reset(new Buffer); // 若后端写的慢，两个缓冲都满了， 再增加一个缓冲
+    }
+    currentBuffer_->append(logline, len);
+    cond_.notify(); //通知后台线程，已经有一个满了的buffer了。  
+  }
+}
+
+// 后端线程
+void AsyncLogging::threadFunc()
+{
+  assert(running_ == true);
+  latch_.countDown();
+  LogFile output(basename_, rollSize_, false); // 定义一个直接进行IO的类。 
+  BufferPtr newBuffer1(new Buffer); //这两个是后台线程的buffer  
+  BufferPtr newBuffer2(new Buffer);
+  newBuffer1->bzero();
+  newBuffer2->bzero();
+  BufferVector buffersToWrite; //用来和前台线程的buffers_进行swap.  
+  buffersToWrite.reserve(16);
+
+  while (running_)
+  {
+    assert(newBuffer1 && newBuffer1->length() == 0);
+    assert(newBuffer2 && newBuffer2->length() == 0);
+    assert(buffersToWrite.empty());
+      //无论cond是因何而醒来，都要将currentBuffer_放到buffers_中。  
+      //如果是因为时间到而醒，那么currentBuffer_还没满，此时也要将之写入LogFile中。  
+      //如果已经有一个前台buffer满了，那么在前台线程中就已经把一个前台buffer放到buffers_中  
+      //了。此时，还是需要把currentBuffer_放到buffers_中（注意，前后放置是不同的buffer，  
+      //因为在前台线程中，currentBuffer_已经被换成nextBuffer_指向的buffer了） 
+
+    {
+      muduo::MutexLockGuard lock(mutex_);
+      if (buffers_.empty())  // unusual usage!
+      {
+        cond_.waitForSeconds(flushInterval_);  //睡眠的时间是日志库flush时间。 
+      }
+      buffers_.push_back(std::move(currentBuffer_));
+      currentBuffer_ = std::move(newBuffer1); /*---归还一个buffer---*/ 
+      buffersToWrite.swap(buffers_); // 交换，实现前后台的转变 
+      if (!nextBuffer_)
+      {
+        nextBuffer_ = std::move(newBuffer2);  /*-----假如需要，归还第二个----*/  
+      } 
+    } // 此时释放锁，前台线程可以写数据
+
+    assert(!buffersToWrite.empty());
+
+    // 下面代码顺序执行，知道把后端的数据全都写到文件
+
+    if (buffersToWrite.size() > 25)
+    {
+      char buf[256];
+      snprintf(buf, sizeof buf, "Dropped log messages at %s, %zd larger buffers\n",
+               Timestamp::now().toFormattedString().c_str(),
+               buffersToWrite.size()-2);
+      fputs(buf, stderr);
+      output.append(buf, static_cast<int>(strlen(buf)));
+      buffersToWrite.erase(buffersToWrite.begin()+2, buffersToWrite.end());
+    }
+
+    //将已经满了的buffer内容写入到LogFile中。由LogFile进行IO操作。  
+    for (size_t i = 0; i < buffersToWrite.size(); ++i)
+    {
+      // FIXME: use unbuffered stdio FILE ? or use ::writev ?
+      output.append(buffersToWrite[i]->data(), buffersToWrite[i]->length());
+    }
+
+    if (buffersToWrite.size() > 2)
+    {
+      // drop non-bzero-ed buffers, avoid trashing
+      buffersToWrite.resize(2);
+    }
+
+    if (!newBuffer1) // 现在把buffersToWrite的buffer归还给后台buffer 
+    {
+      assert(!buffersToWrite.empty());
+      newBuffer1 = std::move(buffersToWrite.back());
+      buffersToWrite.pop_back();
+      newBuffer1->reset();
+    }
+
+    if (!newBuffer2)
+    {
+      assert(!buffersToWrite.empty());
+      newBuffer2 = std::move(buffersToWrite.back());
+      buffersToWrite.pop_back();
+      newBuffer2->reset();
+    }
+
+    buffersToWrite.clear();
+    output.flush(); //flush to drive. less than3 mins a time 
+  }
+  output.flush();
+}
+
