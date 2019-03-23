@@ -42,7 +42,7 @@ namespace current_thread
     return t_threadName;
   }
 
-  bool isMainThread();
+  bool isMainThread(); // 主线程的id和进程的id一致
 
   void sleepUsec(int64_t usec); // 微秒
 }

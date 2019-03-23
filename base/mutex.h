@@ -26,6 +26,7 @@ namespace ccnet
 // class Foo
 // {
 //  public:
+//    
 //   int size() const;
 //
 //  private:
@@ -114,10 +115,6 @@ class MutexLock : noncopyable
   pid_t holder_;  //占用锁的线程id
 
 };
-
-
-
-
 
 
 // Use as a stack variable, eg.

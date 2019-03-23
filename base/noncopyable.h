@@ -16,7 +16,7 @@ class noncopyable
 
  private:
   noncopyable(const noncopyable&) = delete;
-  void operator=(const noncopyable&) = delete;
+  noncopyable& operator=(const noncopyable&) = delete;
 };
 
 

@@ -28,4 +28,24 @@ class CountDownLatch : noncopyable
 };
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #endif  // CCNET_BASE_COUNTDOWNLATCH_H

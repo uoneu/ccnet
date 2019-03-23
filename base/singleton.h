@@ -24,8 +24,8 @@ template<typename T>
 struct has_no_destroy
 {
   // 萃取的又一个新技术，SFINAE技术，即匹配失败不是错误
-  template <typename C> static char test(decltype(&C::no_destroy)); 
-  template <typename C> static int32_t test(...);
+  template<typename C> static char test(decltype(&C::no_destroy)); 
+  template<typename C> static int32_t test(...);
   const static bool value = sizeof(test<T>(0)) == 1; // sizeof 可求函数返回类型大小
 };
 }

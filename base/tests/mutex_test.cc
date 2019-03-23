@@ -5,6 +5,8 @@
 
 #include <vector>
 #include <stdio.h>
+#include <iostream>
+
 
 using namespace ccnet;
 using namespace std;
