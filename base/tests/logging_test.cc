@@ -1,5 +1,6 @@
 #include <iostream>
 #include "../logging.h"
+#include "../time_zone.h"
 
 using namespace ccnet;
 
@@ -21,16 +22,17 @@ void logFlush()
 
 
 int main(void) {
-    printf("%d\n", getpid());
-    g_file = fopen("a.txt", "ae");
-    Logger::setOutput(logOutput);
-    Logger::setFlush(logFlush);
+  ccnet::TimeZone tz("/usr/share/zoneinfo/Asia/Shanghai");
+  ccnet::Logger::setTimeZone(tz);
+  printf("%d\n", getpid());
+  g_file = fopen("a.txt", "ae");
+  Logger::setOutput(logOutput);
+  Logger::setFlush(logFlush);
 
+  LOG_TRACE << "xxxxxxxx";
+  LOG_INFO << "xxxxxxxx";
+  LOG_FATAL << "siji";
 
-    LOG_TRACE << "xxxxxxxx";
-    LOG_INFO << "xxxxxxxx";
-    LOG_FATAL << "siji";
-
-    fclose(g_file);
-    return 0;
+  fclose(g_file);
+  return 0;
 }

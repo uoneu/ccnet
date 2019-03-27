@@ -2,6 +2,8 @@
 #include "../count_down_latch.h"
 #include "../current_thread.h"
 #include "../thread.h"
+#include "../logging.h"
+#include "../time_zone.h"
 
 #include <stdio.h>
 #include <unistd.h>  // usleep
@@ -65,8 +67,11 @@ int main()
   //test(5);
   //test(10);
   //test(50);
+  // 设置时区
+  ccnet::TimeZone tz("/usr/share/zoneinfo/Asia/Shanghai");
+  ccnet::Logger::setTimeZone(tz);
   ccnet::ThreadPool pool("threadpool_test");
-  //cout << pool.name();
+  LOG_INFO << pool.name();
   pool.setMaxQueueSize(5);
   pool.start(9);
   pool.run(task1);

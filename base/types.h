@@ -18,6 +18,9 @@ namespace ccnet
 
 using std::string;
 
+
+// 能力比static_cast要弱,down_cast会报错
+// use like this implicit_cast<superFoo>(foo)
 template<typename To, typename From>
 inline To implicit_cast(From const &f)
 {
@@ -25,8 +28,13 @@ inline To implicit_cast(From const &f)
 }
 
 
-template<typename To, typename From>     // use like this: down_cast<T*>(foo);
-inline To down_cast(From* f)                     // so we only accept pointers
+// use like this: down_cast<T*>(foo)
+// 函数模板类型除了从实参推导,也可以明确指定类型
+// so we only accept pointers
+//
+
+template<typename To, typename From>     
+inline To down_cast(From* f)                    
 {
   if (false)
   {

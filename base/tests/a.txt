@@ -6,3 +6,9 @@
 20180525 06:45:18.413108Z 26067 TRACE main xxxxxxxx - logging_test.cc:30
 20180525 06:45:18.413154Z 26067 INFO  xxxxxxxx - logging_test.cc:31
 20180525 06:45:18.413158Z 26067 FATAL siji - logging_test.cc:32
+20190327 05:47:42.493974Z  6461 TRACE main xxxxxxxx - logging_test.cc:30
+20190327 05:47:42.494021Z  6461 INFO  xxxxxxxx - logging_test.cc:31
+20190327 05:47:42.494025Z  6461 FATAL siji - logging_test.cc:32
+20190327 15:59:01.853884 12103 TRACE main xxxxxxxx - logging_test.cc:32
+20190327 15:59:01.853926 12103 INFO  xxxxxxxx - logging_test.cc:33
+20190327 15:59:01.853930 12103 FATAL siji - logging_test.cc:34

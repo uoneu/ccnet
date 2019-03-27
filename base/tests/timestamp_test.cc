@@ -58,9 +58,9 @@ void benchmark()
 int main()
 {
   Timestamp now(Timestamp::now());
-  printf("%s\n", now.toString().c_str());
-  passByValue(now);
-  passByConstReference(now);
-  benchmark();
+  printf("%s\n", now.toFormattedString(true).c_str());
+  //passByValue(now);
+  //passByConstReference(now);
+  //benchmark();
 }
 
