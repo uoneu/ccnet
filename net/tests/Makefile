@@ -18,7 +18,7 @@ no_test:  $(OBJ)
 	$(CC) no_test.cc $^ -o a.out $(LIB)
 
 buffer_test: $(OBJ)
-	$(CC) buffer_test.cc $^ -o a.out $(LIB)
+	$(CC) buffer_test.cc $^ -o a.out $(LIB) 
 
 sockets_ops_test: $(OBJ)
 	$(CC) sockets_ops_test.cc $^ -o a.out $(LIB)

@@ -1,39 +1,17 @@
-#include "../buffer.h"
-#include <iostream>
-
-using namespace std;
-using namespace ccnet::net;
-
-
-int main(void) {
-  Buffer buf;
-
-  cout << buf.readableBytes() << endl;
-  cout << buf.internalCapacity() << endl;
-
-  buf.appendInt8(-1);
-  buf.appendInt16(-2);
-  buf.appendInt32(-3);
-  printf("%d\n", buf.readInt8());
-
-  buf.retrieveAll();
-
-  buf.append("http\0\n");
-  cout << buf.readableBytes() << endl;
-  //printf("%c\n", buf.readInt8());
-  cout << buf.toStringPiece().as_string() << endl;
-  cout << buf.internalCapacity() << endl;
-
-  return 0;
-}
-/*
 //#define BOOST_TEST_MODULE BufferTest
 #define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
+#define BOOST_TEST_DYN_LINK 
+//动态链接方式
 
-using muduo::string;
-using muduo::net::Buffer;
+#include <boost/test/included/unit_test.hpp>
+#include <iostream>
+#include <string>
+#include "../buffer.h"
+
+using namespace ccnet::net;
+using namespace std;
+using namespace boost;
+using namespace boost::unit_test;
 
 BOOST_AUTO_TEST_CASE(testBufferAppendRetrieve)
 {
@@ -193,9 +171,8 @@ BOOST_AUTO_TEST_CASE(testMove)
   buf.append("muduo", 5);
   const void* inner = buf.peek();
   // printf("Buffer at %p, inner %p\n", &buf, inner);
-  output(std::move(buf), inner);
+ ::output(std::move(buf), inner);
 }
 
-*/
 
 
